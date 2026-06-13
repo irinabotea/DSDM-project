@@ -1,9 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.fittrack.app"
+    namespace = "com.fitpulse.app"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.fittrack.app"
+        applicationId = "com.fitpulse.app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -31,13 +32,31 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        }
+    }
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

@@ -1,4 +1,4 @@
-package com.fittrack.app
+package com.fitpulse.app
 
 import org.junit.Test
 
