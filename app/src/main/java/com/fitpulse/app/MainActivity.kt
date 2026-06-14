@@ -4,51 +4,35 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.fitpulse.app.ui.screens.HomeScreen
+import com.fitpulse.app.ui.theme.FitPulseTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "FitPulse",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            FitPulseApp()
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Hello $name",
-            style = MaterialTheme.typography.headlineMedium
-        )
+fun FitPulseApp() {
+    FitPulseTheme {
+        Scaffold { innerPadding ->
+            HomeScreen(modifier = Modifier.padding(innerPadding))
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    MaterialTheme {
-        Greeting(name = "FitPulse")
-    }
+fun FitPulseAppPreview() {
+    FitPulseApp()
 }
