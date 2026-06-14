@@ -7,18 +7,23 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.fitpulse.app.ui.screens.AddExerciseScreen
+import com.fitpulse.app.ui.screens.ExerciseListScreen
 import com.fitpulse.app.ui.screens.HomeScreen
 import com.fitpulse.app.ui.screens.LoginScreen
 import com.fitpulse.app.ui.screens.PlaceholderScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
+import com.fitpulse.app.ui.viewmodel.ExerciseViewModel
 
 private val bottomBarRoutes = bottomNavItems.map { it.destination.route }.toSet()
 
@@ -104,15 +109,22 @@ fun AppNavigation() {
                 )
             }
             composable(Destination.ExerciseList.route) {
-                PlaceholderScreen(
-                    title = Destination.ExerciseList.label,
-                    subtitle = "Your exercises will appear here"
+                val viewModel: ExerciseViewModel = viewModel()
+                val exercises by viewModel.exercises.collectAsState()
+                ExerciseListScreen(
+                    exercises = exercises,
+                    onAddExercise = {
+                        navController.navigate(Destination.AddExercise.route)
+                    }
                 )
             }
             composable(Destination.AddExercise.route) {
-                PlaceholderScreen(
-                    title = Destination.AddExercise.label,
-                    subtitle = "Add a new exercise"
+                val viewModel: ExerciseViewModel = viewModel()
+                AddExerciseScreen(
+                    onSave = { name, muscleGroup, sets, reps ->
+                        viewModel.addExercise(name, muscleGroup, sets, reps)
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(Destination.Statistics.route) {
