@@ -9,7 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -17,11 +19,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.fitpulse.app.data.SessionManager
 import com.fitpulse.app.ui.screens.AddExerciseScreen
 import com.fitpulse.app.ui.screens.ExerciseListScreen
 import com.fitpulse.app.ui.screens.HomeScreen
 import com.fitpulse.app.ui.screens.LoginScreen
 import com.fitpulse.app.ui.screens.PlaceholderScreen
+import com.fitpulse.app.ui.screens.ProfileScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
 import com.fitpulse.app.ui.viewmodel.ExerciseViewModel
 
@@ -30,6 +34,11 @@ private val bottomBarRoutes = bottomNavItems.map { it.destination.route }.toSet(
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val startDestination = remember {
+        if (sessionManager.isLoggedIn()) Destination.Home.route else Destination.Login.route
+    }
 
     val navigateToTab: (String) -> Unit = { route ->
         navController.navigate(route) {
@@ -68,12 +77,13 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Destination.Login.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Destination.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = {
+                    onLoginSuccess = { username ->
+                        sessionManager.saveLogin(username)
                         navController.navigate(Destination.Home.route) {
                             popUpTo(Destination.Login.route) { inclusive = true }
                             launchSingleTop = true
@@ -88,7 +98,8 @@ fun AppNavigation() {
             }
             composable(Destination.Register.route) {
                 RegisterScreen(
-                    onRegisterSuccess = {
+                    onRegisterSuccess = { username ->
+                        sessionManager.saveLogin(username)
                         navController.navigate(Destination.Home.route) {
                             popUpTo(Destination.Login.route) { inclusive = true }
                             launchSingleTop = true
@@ -134,9 +145,17 @@ fun AppNavigation() {
                 )
             }
             composable(Destination.Profile.route) {
-                PlaceholderScreen(
-                    title = Destination.Profile.label,
-                    subtitle = "Your profile"
+                ProfileScreen(
+                    username = sessionManager.getUsername(),
+                    onLogout = {
+                        sessionManager.logout()
+                        navController.navigate(Destination.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
         }
