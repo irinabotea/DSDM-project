@@ -7,14 +7,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.fitpulse.app.data.Exercise
+import com.fitpulse.app.ui.screens.AddExerciseScreen
+import com.fitpulse.app.ui.screens.ExerciseListScreen
 import com.fitpulse.app.ui.screens.HomeScreen
 import com.fitpulse.app.ui.screens.LoginScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
+import com.fitpulse.app.ui.screens.StatisticsScreen
 import com.fitpulse.app.ui.theme.FitPulseTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,6 +37,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FitPulseApp() {
     val navController = rememberNavController()
+    val exercises = remember { mutableStateListOf<Exercise>() }
 
     FitPulseTheme {
         Scaffold { innerPadding ->
@@ -62,7 +69,47 @@ fun FitPulseApp() {
                 }
 
                 composable("home") {
-                    HomeScreen()
+                    HomeScreen(
+                        onMyExercises = {
+                            navController.navigate("exercises")
+                        },
+                        onStatistics = {
+                            navController.navigate("statistics")
+                        }
+                    )
+                }
+
+                composable("exercises") {
+                    ExerciseListScreen(
+                        exercises = exercises,
+                        onAddExerciseClick = {
+                            navController.navigate("add_exercise")
+                        },
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
+                composable("add_exercise") {
+                    AddExerciseScreen(
+                        onSaveExercise = { exercise ->
+                            exercises.add(exercise)
+                            navController.popBackStack()
+                        },
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
+                composable("statistics") {
+                    StatisticsScreen(
+                        exercises = exercises,
+                        onBackClick = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             }
         }
