@@ -38,7 +38,7 @@ fun HomeScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Monitorizează-ți activitatea și progresul",
+            text = "Track your activity and progress",
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(40.dp))
