@@ -28,6 +28,7 @@ import com.fitpulse.app.ui.screens.PlaceholderScreen
 import com.fitpulse.app.ui.screens.ProfileScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
 import com.fitpulse.app.ui.viewmodel.ExerciseViewModel
+import com.fitpulse.app.ui.screens.StatisticsScreen
 
 private val bottomBarRoutes = bottomNavItems.map { it.destination.route }.toSet()
 
@@ -139,9 +140,11 @@ fun AppNavigation() {
                 )
             }
             composable(Destination.Statistics.route) {
-                PlaceholderScreen(
-                    title = Destination.Statistics.label,
-                    subtitle = "Your progress statistics will appear here"
+                val viewModel: ExerciseViewModel = viewModel()
+                val exercises by viewModel.exercises.collectAsState()
+
+                StatisticsScreen(
+                    exercises = exercises
                 )
             }
             composable(Destination.Profile.route) {
