@@ -133,6 +133,7 @@ fun AppNavigation() {
             composable(Destination.AddExercise.route) {
                 val viewModel: ExerciseViewModel = viewModel()
                 AddExerciseScreen(
+                    onBack = { navController.popBackStack() },
                     onSave = { name, muscleGroup, sets, reps ->
                         viewModel.addExercise(name, muscleGroup, sets, reps)
                         navController.popBackStack()
