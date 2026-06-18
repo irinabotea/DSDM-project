@@ -151,6 +151,8 @@ fun AppNavigation() {
             composable(Destination.Profile.route) {
                 ProfileScreen(
                     username = sessionManager.getUsername(),
+                    profile = sessionManager.getProfile(),
+                    onSaveProfile = { sessionManager.saveProfile(it) },
                     onLogout = {
                         sessionManager.logout()
                         navController.navigate(Destination.Login.route) {
