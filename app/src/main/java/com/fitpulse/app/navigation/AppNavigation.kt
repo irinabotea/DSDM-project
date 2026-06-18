@@ -28,6 +28,7 @@ import com.fitpulse.app.ui.screens.PlaceholderScreen
 import com.fitpulse.app.ui.screens.ProfileScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
 import com.fitpulse.app.ui.viewmodel.ExerciseViewModel
+import com.fitpulse.app.ui.viewmodel.MuscleGroupViewModel
 import com.fitpulse.app.ui.screens.StatisticsScreen
 
 private val bottomBarRoutes = bottomNavItems.map { it.destination.route }.toSet()
@@ -132,10 +133,14 @@ fun AppNavigation() {
             }
             composable(Destination.AddExercise.route) {
                 val viewModel: ExerciseViewModel = viewModel()
+                val muscleGroupViewModel: MuscleGroupViewModel = viewModel()
+                val muscleGroupState by muscleGroupViewModel.uiState.collectAsState()
                 AddExerciseScreen(
+                    muscleGroupState = muscleGroupState,
                     onBack = { navController.popBackStack() },
-                    onSave = { name, muscleGroup, sets, reps, date ->
-                        viewModel.addExercise(name, muscleGroup, sets, reps, date)
+                    onRetryMuscleGroups = { muscleGroupViewModel.load() },
+                    onSave = { name, muscleGroup, category, sets, reps, date ->
+                        viewModel.addExercise(name, muscleGroup, category, sets, reps, date)
                         navController.popBackStack()
                     }
                 )

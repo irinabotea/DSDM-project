@@ -27,12 +27,20 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
             initialValue = emptyList()
         )
 
-    fun addExercise(name: String, muscleGroup: String, sets: Int, reps: Int, date: Long) {
+    fun addExercise(
+        name: String,
+        muscleGroup: String,
+        category: String,
+        sets: Int,
+        reps: Int,
+        date: Long
+    ) {
         viewModelScope.launch {
             repository.insert(
                 Exercise(
                     name = name,
                     muscleGroup = muscleGroup,
+                    category = category,
                     sets = sets,
                     reps = reps,
                     date = date

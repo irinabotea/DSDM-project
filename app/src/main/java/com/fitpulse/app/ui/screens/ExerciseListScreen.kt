@@ -92,7 +92,11 @@ private fun ExerciseItem(exercise: Exercise) {
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = exercise.muscleGroup,
+                text = if (exercise.category.isNotBlank()) {
+                    "${exercise.muscleGroup} · ${exercise.category}"
+                } else {
+                    exercise.muscleGroup
+                },
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
