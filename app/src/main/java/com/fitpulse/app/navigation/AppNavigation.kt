@@ -134,8 +134,8 @@ fun AppNavigation() {
                 val viewModel: ExerciseViewModel = viewModel()
                 AddExerciseScreen(
                     onBack = { navController.popBackStack() },
-                    onSave = { name, muscleGroup, sets, reps ->
-                        viewModel.addExercise(name, muscleGroup, sets, reps)
+                    onSave = { name, muscleGroup, sets, reps, date ->
+                        viewModel.addExercise(name, muscleGroup, sets, reps, date)
                         navController.popBackStack()
                     }
                 )

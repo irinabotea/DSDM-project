@@ -10,5 +10,6 @@ data class Exercise(
     val name: String,
     val muscleGroup: String,
     val sets: Int,
-    val reps: Int
+    val reps: Int,
+    val date: Long = System.currentTimeMillis()
 )

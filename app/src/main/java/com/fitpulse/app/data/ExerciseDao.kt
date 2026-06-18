@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExerciseDao {
 
-    @Query("SELECT * FROM exercises ORDER BY id DESC")
+    @Query("SELECT * FROM exercises ORDER BY date DESC, id DESC")
     fun getAll(): Flow<List<Exercise>>
 
     @Query("SELECT COUNT(*) FROM exercises")

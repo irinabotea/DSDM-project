@@ -21,8 +21,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.Exercise
+import com.fitpulse.app.util.DateUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +55,8 @@ fun ExerciseListScreen(
                 )
             }
         } else {
+            val grouped = exercises.groupBy { DateUtils.startOfDay(it.date) }
+                .toSortedMap(compareByDescending { it })
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -60,8 +64,18 @@ fun ExerciseListScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(exercises, key = { it.id }) { exercise ->
-                    ExerciseItem(exercise)
+                grouped.forEach { (dayStart, dayExercises) ->
+                    item(key = "header-$dayStart") {
+                        Text(
+                            text = DateUtils.dayLabel(dayStart),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    items(dayExercises, key = { it.id }) { exercise ->
+                        ExerciseItem(exercise)
+                    }
                 }
             }
         }

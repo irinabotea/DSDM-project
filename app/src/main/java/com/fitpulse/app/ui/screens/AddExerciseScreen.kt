@@ -15,15 +15,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,24 +39,48 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.PredefinedExercises
 import com.fitpulse.app.ui.theme.FitPulseTheme
+import com.fitpulse.app.util.DateUtils
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AddExerciseScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
-    onSave: (name: String, muscleGroup: String, sets: Int, reps: Int) -> Unit = { _, _, _, _ -> }
+    onSave: (name: String, muscleGroup: String, sets: Int, reps: Int, date: Long) -> Unit =
+        { _, _, _, _, _ -> }
 ) {
     var name by remember { mutableStateOf("") }
     var muscleGroup by remember { mutableStateOf("") }
     var sets by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
     var selectedPreset by remember { mutableStateOf<String?>(null) }
+    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     var nameError by remember { mutableStateOf<String?>(null) }
     var muscleError by remember { mutableStateOf<String?>(null) }
     var setsError by remember { mutableStateOf<String?>(null) }
     var repsError by remember { mutableStateOf<String?>(null) }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { selectedDate = it }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -160,6 +189,16 @@ fun AddExerciseScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Date", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = { showDatePicker = true },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(DateUtils.dayLabel(selectedDate))
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
@@ -179,7 +218,7 @@ fun AddExerciseScreen(
                 if (nameError == null && muscleError == null &&
                     setsError == null && repsError == null
                 ) {
-                    onSave(name.trim(), muscleGroup.trim(), setsValue!!, repsValue!!)
+                    onSave(name.trim(), muscleGroup.trim(), setsValue!!, repsValue!!, selectedDate)
                 }
             },
             modifier = Modifier.fillMaxWidth()

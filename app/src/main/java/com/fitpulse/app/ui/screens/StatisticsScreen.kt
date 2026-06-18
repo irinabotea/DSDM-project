@@ -15,36 +15,82 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.Exercise
+import com.fitpulse.app.util.DateUtils
+import com.fitpulse.app.util.StatsPeriod
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(exercises: List<Exercise>) {
-    val totalExercises = exercises.size
-    val totalSets = exercises.sumOf { it.sets }
-    val totalReps = exercises.sumOf { it.sets * it.reps }
+    var period by remember { mutableStateOf(StatsPeriod.TOTAL) }
+    var anchor by remember { mutableStateOf(System.currentTimeMillis()) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    val topMuscleGroup = exercises
+    val range = DateUtils.periodRange(period, anchor)
+    val filtered = exercises.filter { it.date >= range.start && it.date < range.endExclusive }
+
+    val totalExercises = filtered.size
+    val totalSets = filtered.sumOf { it.sets }
+    val totalReps = filtered.sumOf { it.sets * it.reps }
+
+    val topMuscleGroup = filtered
         .groupBy { it.muscleGroup }
         .maxByOrNull { entry -> entry.value.sumOf { it.sets * it.reps } }
         ?.key ?: "No data"
 
-    val topExercise = exercises.maxByOrNull { it.sets * it.reps }
+    val topExercise = filtered.maxByOrNull { it.sets * it.reps }
 
     val averageSets =
         if (totalExercises > 0) totalSets.toDouble() / totalExercises else 0.0
 
     val averageReps =
         if (totalExercises > 0) totalReps.toDouble() / totalExercises else 0.0
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = anchor)
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { anchor = it }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -60,13 +106,60 @@ fun StatisticsScreen(exercises: List<Exercise>) {
             )
         }
 
+        item {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                StatsPeriod.entries.forEachIndexed { index, p ->
+                    SegmentedButton(
+                        selected = period == p,
+                        onClick = { period = p },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = StatsPeriod.entries.size
+                        )
+                    ) {
+                        Text(p.label)
+                    }
+                }
+            }
+        }
+
+        if (period != StatsPeriod.TOTAL) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { anchor = DateUtils.stepAnchor(period, anchor, -1) }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "Previous period"
+                        )
+                    }
+                    TextButton(onClick = { showDatePicker = true }) {
+                        Text(
+                            text = range.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    IconButton(onClick = { anchor = DateUtils.stepAnchor(period, anchor, 1) }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "Next period"
+                        )
+                    }
+                }
+            }
+        }
+
         item { StatisticCard("Total exercises", totalExercises.toString()) }
         item { StatisticCard("Total sets", totalSets.toString()) }
         item { StatisticCard("Total repetitions", totalReps.toString()) }
 
-        item { MuscleGroupBarChart(exercises = exercises) }
+        item { MuscleGroupBarChart(exercises = filtered) }
 
-        item { MuscleGroupDonutChart(exercises = exercises) }
+        item { MuscleGroupDonutChart(exercises = filtered) }
 
         item { StatisticCard("Most trained muscle group", topMuscleGroup) }
 
@@ -91,7 +184,7 @@ fun StatisticsScreen(exercises: List<Exercise>) {
             )
         }
 
-        item { MuscleGroupSection(exercises = exercises) }
+        item { MuscleGroupSection(exercises = filtered) }
     }
 }
 
