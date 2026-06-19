@@ -1,6 +1,7 @@
 package com.fitpulse.app.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitpulse.app.data.AppDatabase
@@ -36,22 +37,30 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         date: Long
     ) {
         viewModelScope.launch {
-            repository.insert(
-                Exercise(
-                    name = name,
-                    muscleGroup = muscleGroup,
-                    category = category,
-                    sets = sets,
-                    reps = reps,
-                    date = date
+            try {
+                repository.insert(
+                    Exercise(
+                        name = name,
+                        muscleGroup = muscleGroup,
+                        category = category,
+                        sets = sets,
+                        reps = reps,
+                        date = date
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                Log.e("FitPulse", "Failed to insert exercise", e)
+            }
         }
     }
 
     fun deleteExercise(exercise: Exercise) {
         viewModelScope.launch {
-            repository.delete(exercise)
+            try {
+                repository.delete(exercise)
+            } catch (e: Exception) {
+                Log.e("FitPulse", "Failed to delete exercise", e)
+            }
         }
     }
 }

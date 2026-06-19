@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.Exercise
 import com.fitpulse.app.util.DateUtils
 import com.fitpulse.app.util.StatsPeriod
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -166,14 +167,14 @@ fun StatisticsScreen(exercises: List<Exercise>) {
         item {
             StatisticCard(
                 "Average sets / exercise",
-                String.format("%.1f", averageSets)
+                String.format(Locale.getDefault(), "%.1f", averageSets)
             )
         }
 
         item {
             StatisticCard(
                 "Average reps volume / exercise",
-                String.format("%.1f", averageReps)
+                String.format(Locale.getDefault(), "%.1f", averageReps)
             )
         }
 

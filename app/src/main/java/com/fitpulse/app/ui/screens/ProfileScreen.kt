@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.UserProfile
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -131,13 +132,20 @@ fun ProfileScreen(
                     Text("BMI", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = String.format("%.1f", bmi) +
+                        text = String.format(Locale.getDefault(), "%.1f", bmi) +
                             " · " + UserProfile.bmiCategory(bmi),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+        } else {
+            Text(
+                text = "Enter your weight and height to see your BMI.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
 

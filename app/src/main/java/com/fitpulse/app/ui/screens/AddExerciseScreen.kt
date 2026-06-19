@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -101,9 +102,13 @@ fun AddExerciseScreen(
 
     Scaffold(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Add exercise") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -264,14 +269,15 @@ fun AddExerciseScreen(
                 } else null
 
                 if (nameError == null && muscleError == null && categoryError == null &&
-                    setsError == null && repsError == null
+                    setsError == null && repsError == null &&
+                    setsValue != null && repsValue != null
                 ) {
                     onSave(
                         name.trim(),
                         muscleGroup.trim(),
                         category.trim(),
-                        setsValue!!,
-                        repsValue!!,
+                        setsValue,
+                        repsValue,
                         selectedDate
                     )
                 }
