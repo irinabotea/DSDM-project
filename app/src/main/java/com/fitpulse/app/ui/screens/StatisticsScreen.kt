@@ -61,6 +61,7 @@ fun StatisticsScreen(exercises: List<Exercise>) {
     val totalExercises = filtered.size
     val totalSets = filtered.sumOf { it.sets }
     val totalReps = filtered.sumOf { it.sets * it.reps }
+    val totalMinutes = filtered.sumOf { it.durationMinutes }
 
     val topMuscleGroup = filtered
         .groupBy { it.muscleGroup }
@@ -157,6 +158,7 @@ fun StatisticsScreen(exercises: List<Exercise>) {
         item { StatisticCard("Total exercises", totalExercises.toString()) }
         item { StatisticCard("Total sets", totalSets.toString()) }
         item { StatisticCard("Total repetitions", totalReps.toString()) }
+        item { StatisticCard("Total time", DateUtils.formatDuration(totalMinutes)) }
 
         item { MuscleGroupBarChart(exercises = filtered) }
 

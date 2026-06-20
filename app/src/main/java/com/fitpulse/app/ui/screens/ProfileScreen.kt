@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -49,6 +50,11 @@ fun ProfileScreen(
     val currentProfile = UserProfile(weight, height, age, gender, goal)
     val bmi = currentProfile.bmi()
 
+    val weightError = UserProfile.weightError(weight)
+    val heightError = UserProfile.heightError(height)
+    val ageError = UserProfile.ageError(age)
+    val hasErrors = weightError != null || heightError != null || ageError != null
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -72,29 +78,35 @@ fun ProfileScreen(
 
         OutlinedTextField(
             value = weight,
-            onValueChange = { weight = it; saved = false },
+            onValueChange = { weight = filterDecimal(it); saved = false },
             label = { Text("Weight (kg)") },
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = weightError != null,
+            supportingText = { weightError?.let { Text(it) } },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = height,
-            onValueChange = { height = it; saved = false },
+            onValueChange = { height = filterDecimal(it); saved = false },
             label = { Text("Height (cm)") },
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = heightError != null,
+            supportingText = { heightError?.let { Text(it) } },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = age,
-            onValueChange = { age = it; saved = false },
+            onValueChange = { age = filterInteger(it); saved = false },
             label = { Text("Age") },
             singleLine = true,
+            isError = ageError != null,
+            supportingText = { ageError?.let { Text(it) } },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -149,11 +161,51 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        val calorieAdvice = if (hasErrors) null else currentProfile.calorieAdvice()
+        if (calorieAdvice != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Daily calorie goal", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${calorieAdvice.target} kcal / day",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Maintenance: ${calorieAdvice.maintenance} kcal · Goal: $goal",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = calorieAdvice.tip,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        } else {
+            Text(
+                text = "Fill in weight, height, age, gender and goal to get a daily calorie suggestion.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         Button(
             onClick = {
                 onSaveProfile(currentProfile)
                 saved = true
             },
+            enabled = !hasErrors,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (saved) "Saved" else "Save profile")
@@ -168,3 +220,16 @@ fun ProfileScreen(
         }
     }
 }
+
+/** Keeps only digits and a single decimal separator. */
+private fun filterDecimal(input: String): String {
+    val cleaned = input.replace(',', '.').filter { it.isDigit() || it == '.' }
+    val firstDot = cleaned.indexOf('.')
+    if (firstDot == -1) return cleaned
+    val intPart = cleaned.substring(0, firstDot + 1)
+    val decimals = cleaned.substring(firstDot + 1).replace(".", "")
+    return intPart + decimals
+}
+
+/** Keeps only digits. */
+private fun filterInteger(input: String): String = input.filter { it.isDigit() }

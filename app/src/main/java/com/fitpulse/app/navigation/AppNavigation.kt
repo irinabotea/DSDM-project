@@ -166,8 +166,10 @@ fun AppNavigation() {
                     muscleGroupState = muscleGroupState,
                     onBack = { navController.popBackStack() },
                     onRetryMuscleGroups = { muscleGroupViewModel.load() },
-                    onSave = { name, muscleGroup, category, sets, reps, date ->
-                        viewModel.addExercise(name, muscleGroup, category, sets, reps, date)
+                    onSave = { name, muscleGroup, category, trackingType, sets, reps, duration, date ->
+                        viewModel.addExercise(
+                            name, muscleGroup, category, trackingType, sets, reps, duration, date
+                        )
                         navController.popBackStack()
                     }
                 )

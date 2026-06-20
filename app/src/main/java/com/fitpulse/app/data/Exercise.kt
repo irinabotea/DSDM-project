@@ -11,7 +11,9 @@ data class Exercise(
     val name: String,
     val muscleGroup: String,
     val category: String = "",
-    val sets: Int,
-    val reps: Int,
+    val trackingType: String = "REPS",
+    val sets: Int = 0,
+    val reps: Int = 0,
+    val durationMinutes: Int = 0,
     val date: Long = System.currentTimeMillis()
 )

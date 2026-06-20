@@ -5,8 +5,6 @@ construi propria lista de exercitii, le poate organiza pe zile si poate urmari, 
 grafice, cum evolueaza in timp. Fiecare cont are propriile date, separate de ale celorlalti utilizatori
 de pe acelasi dispozitiv.
 
-Proiectul a fost realizat in cadrul laboratorului de Android.
-
 ## Descrierea aplicatiei
 
 La prima utilizare, utilizatorul isi creeaza un cont prin inregistrare, cu nume de utilizator, email si

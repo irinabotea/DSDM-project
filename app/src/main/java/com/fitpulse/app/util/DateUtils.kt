@@ -28,6 +28,18 @@ object DateUtils {
     /** Epoch millis -> human day label, e.g. "Mon, 18 Jun 2026". */
     fun dayLabel(epochMillis: Long): String = dayLabelFormat.format(Date(epochMillis))
 
+    /** Total minutes -> "1h 30m", "45 min", "2h". */
+    fun formatDuration(totalMinutes: Int): String {
+        if (totalMinutes <= 0) return "0 min"
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        return when {
+            hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
+            hours > 0 -> "${hours}h"
+            else -> "$minutes min"
+        }
+    }
+
     /** Start of the day (00:00) for the given epoch millis. */
     fun startOfDay(epochMillis: Long): Long = calendarAt(epochMillis).apply {
         set(Calendar.HOUR_OF_DAY, 0)

@@ -29,6 +29,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -44,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.fitpulse.app.data.PredefinedExercises
+import com.fitpulse.app.data.TrackingType
 import com.fitpulse.app.ui.components.SearchableDropdownField
 import com.fitpulse.app.ui.theme.FitPulseTheme
 import com.fitpulse.app.ui.viewmodel.MuscleGroupUiState
@@ -60,16 +64,21 @@ fun AddExerciseScreen(
         name: String,
         muscleGroup: String,
         category: String,
+        trackingType: String,
         sets: Int,
         reps: Int,
+        durationMinutes: Int,
         date: Long
-    ) -> Unit = { _, _, _, _, _, _ -> }
+    ) -> Unit = { _, _, _, _, _, _, _, _ -> }
 ) {
     var name by remember { mutableStateOf("") }
     var muscleGroup by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
+    var trackingType by remember { mutableStateOf(TrackingType.REPS) }
     var sets by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
+    var hours by remember { mutableStateOf("") }
+    var minutes by remember { mutableStateOf("") }
     var selectedPreset by remember { mutableStateOf<String?>(null) }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -79,6 +88,7 @@ fun AddExerciseScreen(
     var categoryError by remember { mutableStateOf<String?>(null) }
     var setsError by remember { mutableStateOf<String?>(null) }
     var repsError by remember { mutableStateOf<String?>(null) }
+    var durationError by remember { mutableStateOf<String?>(null) }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -145,6 +155,7 @@ fun AddExerciseScreen(
                         name = preset.name
                         muscleGroup = preset.muscleGroup
                         category = preset.category
+                        trackingType = preset.trackingType
                         nameError = null
                         muscleError = null
                         categoryError = null
@@ -219,28 +230,78 @@ fun AddExerciseScreen(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = sets,
-            onValueChange = { sets = it; setsError = null },
-            label = { Text("Sets") },
-            singleLine = true,
-            isError = setsError != null,
-            supportingText = { setsError?.let { Text(it) } },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Tracking", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            val options = listOf(TrackingType.REPS to "Reps", TrackingType.TIME to "Time")
+            options.forEachIndexed { index, (type, label) ->
+                SegmentedButton(
+                    selected = trackingType == type,
+                    onClick = { trackingType = type },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
+                ) {
+                    Text(label)
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = reps,
-            onValueChange = { reps = it; repsError = null },
-            label = { Text("Reps") },
-            singleLine = true,
-            isError = repsError != null,
-            supportingText = { repsError?.let { Text(it) } },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (trackingType == TrackingType.REPS) {
+            OutlinedTextField(
+                value = sets,
+                onValueChange = { sets = it; setsError = null },
+                label = { Text("Sets") },
+                singleLine = true,
+                isError = setsError != null,
+                supportingText = { setsError?.let { Text(it) } },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = reps,
+                onValueChange = { reps = it; repsError = null },
+                label = { Text("Reps") },
+                singleLine = true,
+                isError = repsError != null,
+                supportingText = { repsError?.let { Text(it) } },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = hours,
+                    onValueChange = { hours = it.filter { c -> c.isDigit() }; durationError = null },
+                    label = { Text("Hours") },
+                    singleLine = true,
+                    isError = durationError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                OutlinedTextField(
+                    value = minutes,
+                    onValueChange = { minutes = it.filter { c -> c.isDigit() }; durationError = null },
+                    label = { Text("Minutes") },
+                    singleLine = true,
+                    isError = durationError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            durationError?.let {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Date", style = MaterialTheme.typography.titleMedium)
@@ -255,31 +316,42 @@ fun AddExerciseScreen(
 
         Button(
             onClick = {
-                val setsValue = sets.toIntOrNull()
-                val repsValue = reps.toIntOrNull()
-
                 nameError = if (name.isBlank()) "Name is required" else null
                 muscleError = if (muscleGroup.isBlank()) "Muscle group is required" else null
                 categoryError = if (category.isBlank()) "Category is required" else null
-                setsError = if (setsValue == null || setsValue <= 0) {
-                    "Enter a valid number of sets"
-                } else null
-                repsError = if (repsValue == null || repsValue <= 0) {
-                    "Enter a valid number of reps"
-                } else null
 
-                if (nameError == null && muscleError == null && categoryError == null &&
-                    setsError == null && repsError == null &&
-                    setsValue != null && repsValue != null
-                ) {
-                    onSave(
-                        name.trim(),
-                        muscleGroup.trim(),
-                        category.trim(),
-                        setsValue,
-                        repsValue,
-                        selectedDate
-                    )
+                val commonValid = nameError == null && muscleError == null && categoryError == null
+
+                if (trackingType == TrackingType.REPS) {
+                    val setsValue = sets.toIntOrNull()
+                    val repsValue = reps.toIntOrNull()
+                    setsError = if (setsValue == null || setsValue <= 0) {
+                        "Enter a valid number of sets"
+                    } else null
+                    repsError = if (repsValue == null || repsValue <= 0) {
+                        "Enter a valid number of reps"
+                    } else null
+
+                    if (commonValid && setsError == null && repsError == null &&
+                        setsValue != null && repsValue != null
+                    ) {
+                        onSave(
+                            name.trim(), muscleGroup.trim(), category.trim(),
+                            TrackingType.REPS.name, setsValue, repsValue, 0, selectedDate
+                        )
+                    }
+                } else {
+                    val totalMinutes = (hours.toIntOrNull() ?: 0) * 60 + (minutes.toIntOrNull() ?: 0)
+                    durationError = if (totalMinutes <= 0) {
+                        "Enter a duration of at least 1 minute"
+                    } else null
+
+                    if (commonValid && durationError == null) {
+                        onSave(
+                            name.trim(), muscleGroup.trim(), category.trim(),
+                            TrackingType.TIME.name, 0, 0, totalMinutes, selectedDate
+                        )
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()

@@ -109,7 +109,11 @@ private fun ExerciseItem(exercise: Exercise) {
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "${exercise.sets} sets x ${exercise.reps} reps",
+                text = if (exercise.trackingType == "TIME") {
+                    DateUtils.formatDuration(exercise.durationMinutes)
+                } else {
+                    "${exercise.sets} sets x ${exercise.reps} reps"
+                },
                 style = MaterialTheme.typography.bodyLarge
             )
         }

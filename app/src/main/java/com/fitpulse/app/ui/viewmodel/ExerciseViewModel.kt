@@ -48,8 +48,10 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         name: String,
         muscleGroup: String,
         category: String,
+        trackingType: String,
         sets: Int,
         reps: Int,
+        durationMinutes: Int,
         date: Long
     ) {
         viewModelScope.launch {
@@ -60,8 +62,10 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
                         name = name,
                         muscleGroup = muscleGroup,
                         category = category,
+                        trackingType = trackingType,
                         sets = sets,
                         reps = reps,
+                        durationMinutes = durationMinutes,
                         date = date
                     )
                 )
