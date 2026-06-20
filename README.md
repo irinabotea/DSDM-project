@@ -1,195 +1,128 @@
 # FitPulse
 
-**FitPulse** este o aplicație Android destinată utilizatorilor care doresc să își monitorizeze
-activitatea fizică și progresul în timp. Aplicația permite crearea și gestionarea unor liste de
-exerciții personalizate, planificarea antrenamentelor și înregistrarea rezultatelor. Pe baza datelor
-colectate, aplicația generează statistici relevante (număr de antrenamente, evoluția performanței,
-frecvența exercițiilor).
+FitPulse este o aplicatie Android pentru monitorizarea activitatii fizice. Utilizatorul isi poate
+construi propria lista de exercitii, le poate organiza pe zile si poate urmari, prin statistici si
+grafice, cum evolueaza in timp. Fiecare cont are propriile date, separate de ale celorlalti utilizatori
+de pe acelasi dispozitiv.
 
-Scopul principal al aplicației este de a încuraja un stil de viață activ și de a oferi utilizatorilor
-o imagine clară asupra progresului lor fizic.
+Proiectul a fost realizat in cadrul laboratorului de Android.
 
----
+## Descrierea aplicatiei
 
-## Cuprins
-- [Funcționalități](#-funcționalități)
-- [Tehnologii folosite](#-tehnologii-folosite)
-- [Arhitectura proiectului](#-arhitectura-proiectului)
-- [Structura codului](#-structura-codului)
-- [Cerințe de mediu](#-cerințe-de-mediu)
-- [Instalare și rulare](#-instalare-și-rulare)
-- [Ecranele aplicației](#-ecranele-aplicației)
-- [Baza de date](#-baza-de-date)
-- [Comunicarea cu serverul (API)](#-comunicarea-cu-serverul-api)
-- [Acoperirea cerințelor proiectului](#-acoperirea-cerințelor-proiectului)
+La prima utilizare, utilizatorul isi creeaza un cont prin inregistrare, cu nume de utilizator, email si
+parola. Dupa autentificare, sesiunea este retinuta, astfel incat la urmatoarele deschideri se intra
+direct in aplicatie. Din ecranul de profil utilizatorul se poate deconecta, iar datele lui raman salvate
+pentru data urmatoare.
 
----
+In sectiunea de exercitii, utilizatorul adauga antrenamente alegand dintr-un set de exercitii comune sau
+introducand unul propriu, cu nume, grupa musculara, categorie, numar de seturi si repetari. Categoriile
+si grupele musculare sunt aduse dintr-o baza de date online de fitness si sunt afisate in campuri care se
+filtreaza pe masura ce utilizatorul scrie. Fiecare exercitiu primeste o data, implicit ziua curenta, iar
+in lista exercitiile apar grupate pe zile.
 
-## Funcționalități
+In profil pot fi completate date corporale, precum greutate, inaltime, varsta, gen si obiectiv de
+fitness, iar aplicatia calculeaza indicele de masa corporala.
 
-- **Autentificare** – ecrane de **Login** și **Register** cu validarea câmpurilor.
-- **Sesiune persistentă** – utilizatorul rămâne logat între deschideri (SharedPreferences); opțiune
-  de **Logout**.
-- **Profil utilizator** – salvarea datelor corporale (greutate, înălțime, vârstă, gen, obiectiv de
-  fitness) și calcularea automată a **IMC (BMI)**.
-- **Listă de exerciții** – adăugarea, vizualizarea și stocarea exercițiilor într-o bază de date locală,
-  afișate într-o listă derulabilă (scrollabilă), **grupate pe zile**.
-- **Adăugare exerciții** – din catalogul de exerciții comune (selectabile rapid) sau personalizate;
-  câmpuri de **categorie** și **grupă musculară** sub formă de liste derulabile care se filtrează pe
-  măsură ce scrii.
-- **Selector de dată** – fiecare exercițiu primește o dată (implicit ziua curentă), printr-un
-  DatePicker.
-- **Statistici și grafice** – număr total de exerciții, seturi, repetări, grupă musculară cea mai
-  antrenată, medii, plus **grafic cu bare** și **grafic circular (donut)**. Datele pot fi filtrate pe
-  **Zi / Săptămână / Lună / Total**, cu navigare înainte/înapoi între perioade.
-- **Date din internet** – categoriile și grupele musculare sunt încărcate dintr-un **API public**
-  (wger) prin cereri HTTP, deserializate din JSON.
-
----
+Sectiunea de statistici aduna datele despre exercitii: numarul total de exercitii, seturi si repetari,
+grupa musculara cea mai antrenata, precum si grafice. Datele pot fi filtrate pe zi, saptamana, luna sau
+total, cu navigare inainte si inapoi intre perioade.
 
 ## Tehnologii folosite
 
-| Tehnologie | Rol |
-|------------|-----|
-| **Kotlin** | Limbajul de programare |
-| **Jetpack Compose** | UI declarativ (fără XML pentru layout) |
-| **Material 3** | Componente și temă vizuală |
-| **Navigation Compose** | Navigarea între ecrane + bară de jos |
-| **Room** | Baza de date locală (peste SQLite) |
-| **Retrofit + Gson** | Cereri HTTP și deserializare JSON |
-| **ViewModel + StateFlow** | Gestionarea stării și separarea logicii de UI |
-| **SharedPreferences** | Stocarea sesiunii și a datelor de profil |
-| **Coroutines** | Operații asincrone (bază de date, rețea) |
+Aplicatia este scrisa in Kotlin si foloseste Jetpack Compose pentru interfata, impreuna cu Material 3
+pentru aspectul vizual. Ecranele sunt descrise direct in cod, fara fisiere XML de layout.
 
----
+- Kotlin si Jetpack Compose pentru interfata
+- Material 3 pentru tema si componente
+- Navigation Compose pentru navigarea intre ecrane
+- Room pentru baza de date locala
+- Retrofit si Gson pentru cererile HTTP si deserializarea JSON
+- SharedPreferences pentru sesiune si datele de profil
+- ViewModel, StateFlow si coroutines pentru gestionarea starii si a operatiilor asincrone
 
-## Arhitectura proiectului
-
-Aplicația respectă o separare clară pe straturi:
-
-```
-UI (Compose Screens)  ──►  ViewModel (stare)  ──►  Repository / SharedPreferences / API
-                                                         │
-                                                         ▼
-                                                Room (SQLite)  /  wger API
-```
-
-- **UI (ecrane Compose)** – afișează starea și trimite evenimente către ViewModel.
-- **ViewModel** – deține starea (`StateFlow` / `mutableStateOf`) și apelează sursele de date.
-- **Repository / DAO** – accesul la baza de date Room.
-- **Network** – accesul la API-ul extern prin Retrofit.
-
----
-
-## Structura codului
+## Structura proiectului
 
 ```
 app/src/main/java/com/fitpulse/app/
-├── MainActivity.kt              # Punctul de intrare (setContent)
-├── data/                        # Stratul de date
-│   ├── AppDatabase.kt           # Baza de date Room (singleton)
-│   ├── Exercise.kt              # Entitate (tabel exerciții)
-│   ├── ExerciseDao.kt           # Operații pe baza de date (DAO)
-│   ├── ExerciseRepository.kt    # Acces async la DAO
-│   ├── PredefinedExercises.kt   # Catalog local de exerciții comune
-│   ├── SessionManager.kt        # Sesiune + profil (SharedPreferences)
-│   └── UserProfile.kt           # Model profil + calcul IMC
+├── MainActivity.kt              Punctul de intrare al aplicatiei
+├── data/
+│   ├── AppDatabase.kt           Configurarea bazei de date Room
+│   ├── Exercise.kt              Entitatea pentru exercitii
+│   ├── ExerciseDao.kt           Operatiile pe exercitii
+│   ├── ExerciseRepository.kt    Accesul la exercitii
+│   ├── User.kt                  Entitatea pentru utilizatori
+│   ├── UserDao.kt               Operatiile pe utilizatori
+│   ├── PredefinedExercises.kt   Lista de exercitii comune
+│   ├── SessionManager.kt        Sesiunea si profilul in SharedPreferences
+│   └── UserProfile.kt           Datele de profil si calculul IMC
 ├── navigation/
-│   ├── AppNavigation.kt         # NavHost, rutele și bara de jos
-│   └── Destination.kt           # Definirea rutelor
-├── network/                     # Stratul de rețea
-│   ├── RetrofitClient.kt        # Configurarea Retrofit
-│   ├── WgerApiService.kt        # Cele 2 endpoint-uri HTTP
-│   └── WgerDtos.kt              # Modele pentru JSON
+│   ├── AppNavigation.kt         NavHost, rutele si bara de jos
+│   └── Destination.kt           Definirea rutelor
+├── network/
+│   ├── RetrofitClient.kt        Configurarea Retrofit
+│   ├── WgerApiService.kt        Cele doua endpointuri HTTP
+│   └── WgerDtos.kt              Modelele pentru raspunsurile JSON
 ├── ui/
 │   ├── components/
-│   │   └── SearchableDropdownField.kt  # Câmp cu listă derulabilă + filtrare
-│   ├── screens/                 # Ecranele aplicației
-│   ├── theme/                   # Culori, tipografie, temă
-│   └── viewmodel/               # ExerciseViewModel, MuscleGroupViewModel
+│   │   └── SearchableDropdownField.kt   Camp cu lista filtrabila
+│   ├── screens/                 Ecranele aplicatiei
+│   ├── theme/                   Culori, tipografie si tema
+│   └── viewmodel/               AuthViewModel, ExerciseViewModel, MuscleGroupViewModel
 └── util/
-    ├── DateUtils.kt             # Lucrul cu date/perioade
-    └── Validators.kt            # Validări (email, parolă etc.)
+    ├── PasswordHasher.kt        Generarea hash-ului de parola
+    ├── DateUtils.kt             Lucrul cu date si perioade
+    └── Validators.kt            Validari pentru email si parola
 ```
 
----
+## Navigare si ecrane
 
-## Cerințe de mediu
+Navigarea este gestionata in `AppNavigation.kt`, printr-un `NavHost`. Rutele sunt definite intr-o clasa
+`Destination`: login, register, home, exerciseList, addExercise, statistics si profile. Accesul la
+sectiunile principale se face dintr-o bara de navigare de jos, care este ascunsa pe ecranele de
+autentificare.
 
-- **Android Studio** (versiune recentă)
-- **JDK 11**
-- **Android SDK** – `minSdk = 24`, `targetSdk = 36`
-- Un **emulator** sau un **dispozitiv fizic** Android (cu conexiune la internet pentru funcția de
-  încărcare a categoriilor/grupelor musculare)
+Ecranele aplicatiei sunt: Login, Register, Home, lista de exercitii, adaugarea unui exercitiu,
+statistici si profil.
 
-Versiuni cheie: Kotlin `2.4.0`, AGP `9.2.1`, Compose BOM `2026.05.01`, Room `2.8.4`, Retrofit `2.11.0`.
+## Autentificare
 
----
+Inregistrarea si autentificarea sunt tratate in `AuthViewModel`, impreuna cu tabelul de utilizatori din
+Room.
 
-## ▶ Instalare și rulare
+La inregistrare, aplicatia verifica daca emailul nu este deja folosit, apoi salveaza contul. Parola nu
+este pastrata ca text simplu. Se genereaza o valoare aleatorie unica, un salt, care este combinata cu
+parola, iar rezultatul este trecut prin algoritmul SHA-256. In baza de date sunt salvate doar hash-ul si
+salt-ul, niciodata parola in clar. Aceasta logica se afla in `PasswordHasher.kt`.
 
-### Varianta 1 — Android Studio (recomandat)
-1. Clonează depozitul:
-   ```bash
-   git clone https://github.com/irinabotea/DSDM-project.git
-   ```
-2. Deschide proiectul în **Android Studio** și așteaptă sincronizarea Gradle.
-3. Alege un emulator sau conectează un telefon (cu *USB debugging* activat).
-4. Apasă butonul **Run ▶**.
+La autentificare, parola introdusa este trecuta prin acelasi proces cu salt-ul salvat, iar rezultatul
+este comparat cu hash-ul din baza de date. Daca emailul nu exista sau parola nu se potriveste,
+utilizatorul primeste un mesaj de eroare. Astfel, un cont trebuie creat inainte de autentificare, iar o
+parola gresita este respinsa.
 
-### Varianta 2 — Linia de comandă
-Din directorul rădăcină al proiectului:
-```bash
-# Construiește aplicația (APK debug)
-./gradlew assembleDebug
+Sesiunea curenta este retinuta in SharedPreferences, prin `SessionManager`, ceea ce permite intrarea
+directa in aplicatie la deschiderile urmatoare. La deconectare se sterge doar sesiunea, iar datele
+contului raman salvate.
 
-# Instalează pe un emulator/dispozitiv pornit
-./gradlew installDebug
-```
-APK-ul rezultat se găsește în `app/build/outputs/apk/debug/app-debug.apk`.
+## Stocare locala
 
----
+Datele sunt salvate local cu Room, in `AppDatabase`, care contine doua entitati: `Exercise` si `User`,
+fiecare cu propriul DAO. Accesul la exercitii se face printr-un repository.
 
-## Ecranele aplicației
+Exercitiile sunt legate de utilizatorul care le-a creat, prin campul `userId`, iar interogarile din
+`ExerciseDao` filtreaza dupa acest camp. In acest fel, fiecare cont vede doar exercitiile proprii.
+Datele de profil sunt pastrate in SharedPreferences, separat pentru fiecare utilizator.
 
-| Ecran | Descriere |
-|-------|-----------|
-| **Login** | Autentificare cu email și parolă (cu validare). |
-| **Register** | Crearea unui cont nou (nume, email, parolă, confirmare). |
-| **Home** | Ecran principal cu acces rapid la exerciții și statistici. |
-| **My Exercises** | Lista exercițiilor salvate, grupate pe zile; buton **+** pentru adăugare. |
-| **Add Exercise** | Formular de adăugare cu catalog, categorii/grupe musculare din API și selector de dată. |
-| **Statistics** | Statistici și grafice, cu filtrare pe Zi/Săptămână/Lună/Total. |
-| **Profile** | Date corporale, IMC și buton de Logout. |
+Exercitiile sunt afisate intr-o lista derulabila, realizata cu `LazyColumn`, grupata pe zile.
 
-Navigarea principală se face prin **bara de jos** (Home, Exercises, Statistics, Profile).
+## Cereri HTTP si deserializare JSON
 
----
+Pentru datele venite din internet, aplicatia foloseste Retrofit cu un convertor Gson, configurat in
+`RetrofitClient.kt`. Interfata `WgerApiService` defineste doua cereri catre API-ul public wger:
 
-## Baza de date
+- `exercisecategory` pentru categoriile de exercitii
+- `muscle` pentru grupele musculare
 
-Aplicația folosește **Room** (un strat peste SQLite) pentru stocarea locală:
-
-- **Entitate `Exercise`** – câmpuri: `id`, `name`, `muscleGroup`, `category`, `sets`, `reps`, `date`.
-- **DAO (`ExerciseDao`)** – operații: citire (`Flow`), inserare, ștergere, numărare.
-- **`AppDatabase`** – singleton cu acces unic la baza de date.
-- **`ExerciseRepository`** – intermediază accesul asincron la DAO.
-
-Datele rămân salvate între deschiderile aplicației.
-
-> Notă: în modul **offline**, exercițiile salvate local rămân disponibile; doar sugestiile de
-> categorii/grupe musculare din API necesită internet.
-
----
-
-## Comunicarea cu serverul (API)
-
-Aplicația face cereri HTTP către API-ul public **[wger](https://wger.de/en/software/api)**:
-
-1. `GET /api/v2/exercisecategory/` – categoriile de exerciții.
-2. `GET /api/v2/muscle/` – grupele musculare.
-
-Rezultatele JSON sunt **deserializate** (Gson) și afișate ca opțiuni selectabile în ecranul de
-**Add Exercise**. Erorile de rețea sunt tratate, iar utilizatorul poate reîncerca (**Retry**).
-
----
+Raspunsurile in format JSON sunt deserializate in modele Kotlin definite in `WgerDtos.kt` si sunt
+incarcate ca optiuni in campurile din ecranul de adaugare a unui exercitiu. Aceste campuri folosesc o
+lista derulabila care se filtreaza in functie de textul introdus. Erorile de retea sunt tratate, iar
+utilizatorul poate reincerca incarcarea.

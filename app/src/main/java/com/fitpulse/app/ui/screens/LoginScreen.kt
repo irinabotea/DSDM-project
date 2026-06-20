@@ -31,7 +31,8 @@ import com.fitpulse.app.util.Validators
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginSuccess: (username: String) -> Unit = {},
+    authError: String? = null,
+    onLogin: (email: String, password: String) -> Unit = { _, _ -> },
     onNavigateToRegister: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
@@ -98,12 +99,20 @@ fun LoginScreen(
                 } else null
 
                 if (emailError == null && passwordError == null) {
-                    onLoginSuccess(email.trim())
+                    onLogin(email.trim(), password)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Login")
+        }
+        if (authError != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = authError,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
 

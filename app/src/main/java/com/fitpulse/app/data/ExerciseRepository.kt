@@ -4,9 +4,10 @@ import kotlinx.coroutines.flow.Flow
 
 class ExerciseRepository(private val exerciseDao: ExerciseDao) {
 
-    val exercises: Flow<List<Exercise>> = exerciseDao.getAll()
+    fun exercisesForUser(userId: Long): Flow<List<Exercise>> =
+        exerciseDao.getForUser(userId)
 
-    suspend fun count(): Int = exerciseDao.count()
+    suspend fun count(userId: Long): Int = exerciseDao.count(userId)
 
     suspend fun insert(exercise: Exercise) = exerciseDao.insert(exercise)
 

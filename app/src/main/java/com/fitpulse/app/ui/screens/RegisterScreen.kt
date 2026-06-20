@@ -31,7 +31,8 @@ import com.fitpulse.app.util.Validators
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onRegisterSuccess: (username: String) -> Unit = {},
+    authError: String? = null,
+    onRegister: (username: String, email: String, password: String) -> Unit = { _, _, _ -> },
     onNavigateToLogin: () -> Unit = {}
 ) {
     var username by remember { mutableStateOf("") }
@@ -136,12 +137,20 @@ fun RegisterScreen(
                 if (usernameError == null && emailError == null &&
                     passwordError == null && confirmError == null
                 ) {
-                    onRegisterSuccess(username.trim())
+                    onRegister(username.trim(), email.trim(), password)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Register")
+        }
+        if (authError != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = authError,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
 

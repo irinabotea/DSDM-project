@@ -7,9 +7,12 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +30,7 @@ import com.fitpulse.app.ui.screens.LoginScreen
 import com.fitpulse.app.ui.screens.PlaceholderScreen
 import com.fitpulse.app.ui.screens.ProfileScreen
 import com.fitpulse.app.ui.screens.RegisterScreen
+import com.fitpulse.app.ui.viewmodel.AuthViewModel
 import com.fitpulse.app.ui.viewmodel.ExerciseViewModel
 import com.fitpulse.app.ui.viewmodel.MuscleGroupViewModel
 import com.fitpulse.app.ui.screens.StatisticsScreen
@@ -83,13 +87,23 @@ fun AppNavigation() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Destination.Login.route) {
+                val authViewModel: AuthViewModel = viewModel()
+                var authError by remember { mutableStateOf<String?>(null) }
                 LoginScreen(
-                    onLoginSuccess = { username ->
-                        sessionManager.saveLogin(username)
-                        navController.navigate(Destination.Home.route) {
-                            popUpTo(Destination.Login.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
+                    authError = authError,
+                    onLogin = { email, password ->
+                        authError = null
+                        authViewModel.login(
+                            email = email,
+                            password = password,
+                            onError = { authError = it },
+                            onSuccess = {
+                                navController.navigate(Destination.Home.route) {
+                                    popUpTo(Destination.Login.route) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
                     },
                     onNavigateToRegister = {
                         navController.navigate(Destination.Register.route) {
@@ -99,13 +113,24 @@ fun AppNavigation() {
                 )
             }
             composable(Destination.Register.route) {
+                val authViewModel: AuthViewModel = viewModel()
+                var authError by remember { mutableStateOf<String?>(null) }
                 RegisterScreen(
-                    onRegisterSuccess = { username ->
-                        sessionManager.saveLogin(username)
-                        navController.navigate(Destination.Home.route) {
-                            popUpTo(Destination.Login.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
+                    authError = authError,
+                    onRegister = { username, email, password ->
+                        authError = null
+                        authViewModel.register(
+                            username = username,
+                            email = email,
+                            password = password,
+                            onError = { authError = it },
+                            onSuccess = {
+                                navController.navigate(Destination.Home.route) {
+                                    popUpTo(Destination.Login.route) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
                     },
                     onNavigateToLogin = {
                         navController.navigate(Destination.Login.route) {
@@ -123,6 +148,7 @@ fun AppNavigation() {
             }
             composable(Destination.ExerciseList.route) {
                 val viewModel: ExerciseViewModel = viewModel()
+                LaunchedEffect(Unit) { viewModel.refreshUser() }
                 val exercises by viewModel.exercises.collectAsState()
                 ExerciseListScreen(
                     exercises = exercises,
@@ -133,6 +159,7 @@ fun AppNavigation() {
             }
             composable(Destination.AddExercise.route) {
                 val viewModel: ExerciseViewModel = viewModel()
+                LaunchedEffect(Unit) { viewModel.refreshUser() }
                 val muscleGroupViewModel: MuscleGroupViewModel = viewModel()
                 val muscleGroupState by muscleGroupViewModel.uiState.collectAsState()
                 AddExerciseScreen(
@@ -147,6 +174,7 @@ fun AppNavigation() {
             }
             composable(Destination.Statistics.route) {
                 val viewModel: ExerciseViewModel = viewModel()
+                LaunchedEffect(Unit) { viewModel.refreshUser() }
                 val exercises by viewModel.exercises.collectAsState()
 
                 StatisticsScreen(
