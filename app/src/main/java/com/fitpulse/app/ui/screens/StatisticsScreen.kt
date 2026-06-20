@@ -65,10 +65,10 @@ fun StatisticsScreen(exercises: List<Exercise>) {
 
     val topMuscleGroup = filtered
         .groupBy { it.muscleGroup }
-        .maxByOrNull { entry -> entry.value.sumOf { it.sets * it.reps } }
+        .maxByOrNull { entry -> entry.value.sumOf { it.effortPoints() } }
         ?.key ?: "No data"
 
-    val topExercise = filtered.maxByOrNull { it.sets * it.reps }
+    val topExercise = filtered.maxByOrNull { it.effortPoints() }
 
     val averageSets =
         if (totalExercises > 0) totalSets.toDouble() / totalExercises else 0.0
@@ -183,7 +183,13 @@ fun StatisticsScreen(exercises: List<Exercise>) {
         item {
             StatisticCard(
                 "Top exercise",
-                topExercise?.let { "${it.name} (${it.sets * it.reps} reps)" } ?: "No data"
+                topExercise?.let {
+                    if (it.trackingType == "TIME") {
+                        "${it.name} (${DateUtils.formatDuration(it.durationMinutes)})"
+                    } else {
+                        "${it.name} (${it.sets * it.reps} reps)"
+                    }
+                } ?: "No data"
             )
         }
 
@@ -221,7 +227,7 @@ fun StatisticCard(title: String, value: String) {
 fun MuscleGroupBarChart(exercises: List<Exercise>) {
     val data = exercises
         .groupBy { it.muscleGroup }
-        .mapValues { entry -> entry.value.sumOf { it.sets * it.reps } }
+        .mapValues { entry -> entry.value.sumOf { it.effortPoints() } }
         .filter { it.value > 0 }
         .toList()
         .sortedByDescending { it.second }
@@ -254,7 +260,7 @@ fun MuscleGroupBarChart(exercises: List<Exercise>) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(group, fontWeight = FontWeight.SemiBold)
-                        Text("$value reps")
+                        Text("$value pts")
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))
@@ -288,7 +294,7 @@ fun MuscleGroupBarChart(exercises: List<Exercise>) {
 fun MuscleGroupDonutChart(exercises: List<Exercise>) {
     val data = exercises
         .groupBy { it.muscleGroup }
-        .mapValues { entry -> entry.value.sumOf { it.sets * it.reps } }
+        .mapValues { entry -> entry.value.sumOf { it.effortPoints() } }
         .filter { it.value > 0 }
 
     val total = data.values.sum()
@@ -376,11 +382,11 @@ fun MuscleGroupDonutChart(exercises: List<Exercise>) {
 
 @Composable
 fun MuscleGroupSection(exercises: List<Exercise>) {
-    val totalVolume = exercises.sumOf { it.sets * it.reps }
+    val totalVolume = exercises.sumOf { it.effortPoints() }
 
     val groups = exercises
         .groupBy { it.muscleGroup }
-        .mapValues { entry -> entry.value.sumOf { it.sets * it.reps } }
+        .mapValues { entry -> entry.value.sumOf { it.effortPoints() } }
         .toList()
         .sortedByDescending { it.second }
 
@@ -409,7 +415,7 @@ fun MuscleGroupSection(exercises: List<Exercise>) {
                             0
                         }
 
-                    Text("$group: $volume reps • $percent%")
+                    Text("$group: $volume pts • $percent%")
                 }
             }
         }

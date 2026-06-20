@@ -16,4 +16,12 @@ data class Exercise(
     val reps: Int = 0,
     val durationMinutes: Int = 0,
     val date: Long = System.currentTimeMillis()
-)
+) {
+    /**
+     * A single effort value usable for both exercise types, so time-based
+     * exercises also contribute to the muscle-group statistics:
+     * reps-based -> sets * reps, time-based -> duration in minutes.
+     */
+    fun effortPoints(): Int =
+        if (trackingType == "TIME") durationMinutes else sets * reps
+}
